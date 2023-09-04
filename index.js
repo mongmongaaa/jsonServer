@@ -38,5 +38,5 @@ app.post('/insert', function (req, res) {
 })
 
 
-app.listen(3030) //포트번호 
+app.listen(3000) //포트번호 
 
