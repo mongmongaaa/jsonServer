@@ -11,30 +11,50 @@ app.use(bodyParser.urlencoded({ extended: false })) //사용
 app.use(bodyParser.json()) //사용 
 
 
+
+
+
+const data = {
+  select: function() {
+    return  JSON.parse(fs.readFileSync('./test.json'));
+  },
+  insert: function(newobj) {
+    const jsonData = data.select();
+  let newData = [...jsonData, { id:jsonData.length+1, ...newobj }] // 데이터 추가해주는 작업 
+                                //JSON.stringify 제이슨 문자 형식으로 만들어주는 애 
+  fs.writeFileSync('./test.json',JSON.stringify(newData));   
+  return newData;
+  },
+  update: function() {},
+  delete: function() {}
+}
+
+
+
+
+
+
     // 경로를 바꾸게되면 /abc 로 바꾼다면 브라우저 서버 요청한 값이 그것과 같다면 이걸 실행함 그럼 프론트단에서는 3030/abc 적어줘야함
 app.get('/abc', function (req, res) {
-  const jsonData = fs.readFileSync('./test.json');
+  // const jsonData = fs.readFileSync('./test.json'); 위 셀렉트에서 써줬음
                     //비동기 awate가 걸린것과 같음 내용을 전부 가져오기 전까지  실행이 안됨  
-  res.send( JSON.parse(jsonData) )
+  res.send( data.select() )
 }) // 이거 많이 만들 수 있음 
 
               //동적파일 얘는   const {id} = req.params; 에 들어감
-app.get('/abc/:id', function (req, res) {
-  const jsonData = fs.readFileSync('./test.json');
-  const data = JSON.parse(jsonData)
-  
+app.delete('/abc/:id', function (req, res) {
+  const jsonData = data.select(); // 데이터 들어있는 놈
   const {id} = req.params; // 여기로 들어옴 
-  const aaa = data.filter(n=>n.id ==id)
+  const delData = jsonData.filter(n =>  n.id != id) // 클릭한놈 빼고 다시 뿌리기해주는 놈 
+   fs.writeFileSync('./test.json',JSON.stringify(delData));
 
-  res.send( aaa )
+  res.send( delData )
 })
 
 
 app.post('/insert', function (req, res) {  
-  console.log(req.body);
-                                //JSON.stringify 제이슨 문자 형식으로 만들어주는 애 
-  fs.writeFileSync('./test.json',JSON.stringify(req.body));        
-  res.send(' 성공'); //< 이건 꼭 있어야함 데이터 찾아주는 애 이거 안넣으면 계속 새로고침 됨  
+       
+  res.send(data.insert(req.body)); //< 이건 꼭 있어야함 데이터 찾아주는 애 이거 안넣으면 계속 새로고침 됨  - 없으면 로딩이 길어짐 
 })
 
 
